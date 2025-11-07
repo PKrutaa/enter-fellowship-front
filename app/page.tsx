@@ -139,44 +139,113 @@ export default function Home() {
       prev.map((d) => pendingIds.includes(d.id) ? { ...d, status: 'processing' as const } : d)
     );
 
-    // Process all in parallel - update each one as it completes
-    const processingPromises = pendingDocs.map(async (doc) => {
-      try {
-        const result = await APIService.extractPDF(
-          doc.file,
-          doc.label,
-          doc.extraction_schema
-        );
+    // Track quais documentos já receberam resultado
+    const receivedResults = new Set<number>();
 
-        // Update this specific document immediately when done
-        setDocuments((prev) =>
-          prev.map((d) =>
-            d.id === doc.id
-              ? { ...d, status: 'completed' as const, result }
-              : d
-          )
-        );
-      } catch (error) {
-        console.error('Error processing document:', error);
-        
-        // Update this specific document with error immediately
-        setDocuments((prev) =>
-          prev.map((d) =>
-            d.id === doc.id
-              ? {
-                  ...d,
-                  status: 'error' as const,
-                  error: error instanceof Error ? error.message : 'Erro desconhecido',
-                }
-              : d
-          )
-        );
-      }
-    });
+    // Timeout para detectar PDFs travados (60 segundos)
+    const timeoutId = setTimeout(() => {
+      console.warn('Timeout: alguns documentos não receberam resposta');
+      setDocuments((prev) =>
+        prev.map((d, idx) => {
+          const docIndex = pendingDocs.findIndex(pd => pd.id === d.id);
+          if (docIndex !== -1 && !receivedResults.has(docIndex) && d.status === 'processing') {
+            return {
+              ...d,
+              status: 'error' as const,
+              error: 'Timeout: documento não processado pelo servidor'
+            };
+          }
+          return d;
+        })
+      );
+      setIsProcessing(false);
+    }, 60000);
 
-    // Wait for all to complete
-    await Promise.allSettled(processingPromises);
+    try {
+      // Send all files in a single batch request with SSE
+      const batchData = pendingDocs.map(doc => ({
+        file: doc.file,
+        label: doc.label,
+        schema: doc.extraction_schema
+      }));
 
+      console.log('Enviando batch de', pendingDocs.length, 'documentos');
+
+      await APIService.extractBatchWithSSE(
+        batchData,
+        // onResult: atualiza cada documento conforme é processado
+        (batchResult) => {
+          console.log('Resultado recebido para index:', batchResult.index, batchResult);
+          const docIndex = batchResult.index;
+          receivedResults.add(docIndex);
+          
+          if (docIndex >= 0 && docIndex < pendingDocs.length) {
+            const doc = pendingDocs[docIndex];
+            
+            const result = {
+              success: batchResult.success,
+              data: batchResult.data,
+              metadata: {
+                method: batchResult.metadata.method,
+                time_seconds: batchResult.metadata.time,
+              }
+            };
+
+            setDocuments((prev) =>
+              prev.map((d) =>
+                d.id === doc.id
+                  ? {
+                      ...d,
+                      status: batchResult.success ? 'completed' as const : 'error' as const,
+                      result: batchResult.success ? result : undefined,
+                      error: batchResult.success ? undefined : 'Erro na extração'
+                    }
+                  : d
+              )
+            );
+          }
+        },
+        // onComplete: log do resumo final e limpa timeout
+        (summary) => {
+          console.log('Batch processing complete:', summary);
+          clearTimeout(timeoutId);
+          
+          // Verifica se todos receberam resultado
+          if (receivedResults.size < pendingDocs.length) {
+            console.warn('Alguns documentos não receberam resultado:', 
+              pendingDocs.length - receivedResults.size);
+          }
+        },
+        // onError: marca todos como erro
+        (errorMessage) => {
+          setDocuments((prev) =>
+            prev.map((d) =>
+              pendingIds.includes(d.id)
+                ? { ...d, status: 'error' as const, error: errorMessage }
+                : d
+            )
+          );
+        }
+      );
+    } catch (error) {
+      console.error('Error processing batch:', error);
+      clearTimeout(timeoutId);
+      
+      // Mark all as error if batch fails
+      setDocuments((prev) =>
+        prev.map((d) =>
+          pendingIds.includes(d.id)
+            ? {
+                ...d,
+                status: 'error' as const,
+                error: error instanceof Error ? error.message : 'Erro no processamento em batch',
+              }
+            : d
+        )
+      );
+    }
+
+    clearTimeout(timeoutId);
     setIsProcessing(false);
   };
 

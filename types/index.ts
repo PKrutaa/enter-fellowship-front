@@ -21,7 +21,8 @@ export interface ExtractionResult {
   data: Record<string, any>;
   metadata: {
     method: string;
-    time_seconds: number;
+    time_seconds?: number;
+    time?: number;
     pipeline_info?: {
       method: string;
       similarity?: number;
@@ -31,6 +32,18 @@ export interface ExtractionResult {
     cache_info?: {
       source?: string;
     };
+  };
+}
+
+export interface BatchExtractionResult {
+  index: number;
+  filename: string;
+  label: string;
+  success: boolean;
+  data: Record<string, any>;
+  metadata: {
+    method: string;
+    time: number;
   };
 }
 

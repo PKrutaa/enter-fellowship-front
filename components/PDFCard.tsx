@@ -161,8 +161,9 @@ export default function PDFCard({ document, onRemove, onConfigure, isAutoConfigu
 
           {/* Error message */}
           {document.error && (
-            <div className="mt-2 p-2 bg-red-500/10 border border-red-500/30 rounded-lg">
-              <p className="text-xs text-red-400">{document.error}</p>
+            <div className="mt-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <p className="text-xs font-medium text-red-400 mb-1">Erro:</p>
+              <p className="text-xs text-red-300 break-words">{document.error}</p>
             </div>
           )}
 
