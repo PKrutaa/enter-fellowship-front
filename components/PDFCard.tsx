@@ -117,12 +117,6 @@ export default function PDFCard({ document, onRemove, onConfigure, isAutoConfigu
                 <button
                   onClick={() => onConfigure(document.id)}
                   className="p-2 text-gray-400 rounded-lg transition-colors"
-                  style={{
-                    '&:hover': {
-                      color: '#FFAE35',
-                      backgroundColor: 'rgba(255, 174, 53, 0.1)'
-                    }
-                  }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = '#FFAE35';
                     e.currentTarget.style.backgroundColor = 'rgba(255, 174, 53, 0.1)';

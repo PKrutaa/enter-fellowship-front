@@ -23,14 +23,14 @@ export default function Home() {
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   
-  const phrases = [
-    'Otimizando seu tempo',
-    'Melhorando sua experiência',
-    'Extraindo dados de PDFs',
-    'Automatizando processos'
-  ];
-  
   React.useEffect(() => {
+    const phrases = [
+      'Otimizando seu tempo',
+      'Melhorando sua experiência',
+      'Extraindo dados de PDFs',
+      'Automatizando processos'
+    ];
+    
     const currentPhrase = phrases[currentPhraseIndex];
     let timeout: NodeJS.Timeout;
     
