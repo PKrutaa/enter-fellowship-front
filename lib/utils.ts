@@ -1,5 +1,5 @@
 /**
- * Funções utilitárias
+ * Utility functions
  */
 
 export function cn(...classes: (string | boolean | undefined)[]): string {
@@ -22,5 +22,3 @@ export function formatDuration(seconds: number): string {
   if (seconds < 1) return `${Math.round(seconds * 1000)}ms`;
   return `${seconds.toFixed(2)}s`;
 }
-
-

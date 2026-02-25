@@ -1,5 +1,5 @@
 /**
- * Serviço de API para comunicação com o backend
+ * API service for backend communication
  */
 
 import { ExtractionSchema, ExtractionResult, BatchExtractionResult } from '@/types';
@@ -8,7 +8,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export class APIService {
   /**
-   * Extrai dados de um PDF usando o backend
+   * Extract data from a single PDF
    */
   static async extractPDF(
     file: File,
@@ -27,14 +27,14 @@ export class APIService {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
-      throw new Error(error.detail || 'Erro na extração');
+      throw new Error(error.detail || 'Extraction failed');
     }
 
     return response.json();
   }
 
   /**
-   * Extrai dados de múltiplos PDFs em batch com SSE (Server-Sent Events)
+   * Extract data from multiple PDFs in batch with SSE (Server-Sent Events)
    */
   static async extractBatchWithSSE(
     documents: Array<{ file: File; label: string; schema: ExtractionSchema }>,
@@ -44,7 +44,6 @@ export class APIService {
   ): Promise<void> {
     const formData = new FormData();
     
-    // Adiciona arquivos, labels e schemas intercalados
     documents.forEach(({ file, label, schema }) => {
       formData.append('files', file);
       formData.append('labels', label);
@@ -58,15 +57,14 @@ export class APIService {
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error('Erro na requisição: ' + errorText.substring(0, 100));
+      throw new Error('Request error: ' + errorText.substring(0, 100));
     }
 
-    // Lê SSE stream
     const reader = response.body?.getReader();
     const decoder = new TextDecoder();
     
     if (!reader) {
-      throw new Error('Não foi possível ler o stream de resposta');
+      throw new Error('Unable to read response stream');
     }
 
     let buffer = '';
@@ -78,15 +76,14 @@ export class APIService {
         const { done, value } = await reader.read();
         
         if (done) {
-          console.log('SSE stream finalizado');
+          console.log('SSE stream ended');
           break;
         }
         
         buffer += decoder.decode(value, { stream: true });
         
-        // Processa linhas completas
         const lines = buffer.split('\n');
-        buffer = lines.pop() || ''; // Guarda linha incompleta
+        buffer = lines.pop() || '';
         
         for (const line of lines) {
           const trimmedLine = line.trim();
@@ -97,27 +94,25 @@ export class APIService {
           } else if (trimmedLine.startsWith('data:')) {
             currentData += trimmedLine.substring(5).trim();
           } else if (trimmedLine === '' && currentEvent && currentData) {
-            // Evento completo
             console.log('SSE Data:', currentEvent, currentData);
             
             try {
               const parsedData = JSON.parse(currentData);
               
               if (currentEvent === 'result') {
-                console.log('Resultado recebido:', parsedData);
+                console.log('Result received:', parsedData);
                 onResult(parsedData as BatchExtractionResult);
               } else if (currentEvent === 'complete') {
-                console.log('Processamento completo:', parsedData);
+                console.log('Processing complete:', parsedData);
                 onComplete?.(parsedData);
               } else if (currentEvent === 'error') {
-                console.error('Erro SSE:', parsedData);
-                onError?.(parsedData.error || 'Erro desconhecido');
+                console.error('SSE error:', parsedData);
+                onError?.(parsedData.error || 'Unknown error');
               }
             } catch (e) {
-              console.error('Erro ao parsear SSE data:', currentData, e);
+              console.error('Failed to parse SSE data:', currentData, e);
             }
             
-            // Reset para próximo evento
             currentEvent = '';
             currentData = '';
           }
@@ -129,7 +124,7 @@ export class APIService {
   }
 
   /**
-   * Verifica o status da API
+   * Check API health status
    */
   static async healthCheck(): Promise<{
     status: string;
@@ -140,24 +135,22 @@ export class APIService {
     const response = await fetch(`${API_BASE_URL}/health`);
     
     if (!response.ok) {
-      throw new Error('API não está respondendo');
+      throw new Error('API is not responding');
     }
 
     return response.json();
   }
 
   /**
-   * Obtém estatísticas da API
+   * Get API statistics
    */
   static async getStats() {
     const response = await fetch(`${API_BASE_URL}/stats`);
     
     if (!response.ok) {
-      throw new Error('Erro ao obter estatísticas');
+      throw new Error('Failed to fetch statistics');
     }
 
     return response.json();
   }
 }
-
-

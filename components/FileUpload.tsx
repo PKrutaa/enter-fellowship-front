@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useCallback } from 'react';
-import { Upload, FileText } from 'lucide-react';
+import React, { useCallback, useState, useRef } from 'react';
+import { Upload, FileText, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface FileUploadProps {
@@ -10,68 +10,56 @@ interface FileUploadProps {
 }
 
 export default function FileUpload({ onFilesSelected, disabled }: FileUploadProps) {
-  const [isDragging, setIsDragging] = React.useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const zoneRef = useRef<HTMLDivElement>(null);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-
-    const files = Array.from(e.dataTransfer.files).filter(
-      file => file.type === 'application/pdf'
-    );
-
-    if (files.length > 0) {
-      onFilesSelected(files);
-    }
+    const files = Array.from(e.dataTransfer.files).filter((f) => f.type === 'application/pdf');
+    if (files.length > 0) onFilesSelected(files);
   }, [onFilesSelected]);
 
   const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files && files.length > 0) {
-      onFilesSelected(Array.from(files));
-    }
+    if (files && files.length > 0) onFilesSelected(Array.from(files));
   }, [onFilesSelected]);
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  }, []);
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!zoneRef.current) return;
+    const rect = zoneRef.current.getBoundingClientRect();
+    zoneRef.current.style.setProperty('--spot-x', `${e.clientX - rect.left}px`);
+    zoneRef.current.style.setProperty('--spot-y', `${e.clientY - rect.top}px`);
+  };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="w-full"
-    >
+    <div className="relative group">
+      {/* Outer gradient glow */}
       <div
+        className="absolute -inset-[2px] rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-700"
+        style={{
+          background: 'var(--gradient-vivid)',
+          backgroundSize: '300% 300%',
+          animation: 'gradient-shift 4s ease infinite',
+          filter: 'blur(6px)',
+        }}
+      />
+
+      <div
+        ref={zoneRef}
         onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
+        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+        onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+        onMouseMove={handleMouseMove}
         className={`
-          relative border-2 border-dashed rounded-xl p-16 text-center
-          transition-all duration-300 ease-in-out
+          relative rounded-2xl p-16 text-center transition-all duration-300 card-spotlight
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-          ${isDragging ? 'bg-black/40' : 'border-gray-800 bg-black/20'}
+          ${isDragging ? 'glow-accent' : ''}
         `}
         style={{
-          borderColor: isDragging ? '#FFAE35' : undefined,
-          backgroundColor: isDragging ? 'rgba(255, 174, 53, 0.1)' : undefined
-        }}
-        onMouseEnter={(e) => {
-          if (!isDragging && !disabled) {
-            e.currentTarget.style.borderColor = 'rgba(255, 174, 53, 0.5)';
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!isDragging && !disabled) {
-            e.currentTarget.style.borderColor = '';
-          }
+          background: isDragging ? 'rgba(124, 92, 252, 0.04)' : 'var(--glass)',
+          backdropFilter: 'blur(24px) saturate(1.3)',
+          border: `1px solid ${isDragging ? 'rgba(124, 92, 252, 0.3)' : 'var(--glass-border)'}`,
         }}
       >
         <input
@@ -81,38 +69,55 @@ export default function FileUpload({ onFilesSelected, disabled }: FileUploadProp
           onChange={handleFileInput}
           disabled={disabled}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-          id="file-upload"
         />
-        
+
         <motion.div
-          animate={isDragging ? { scale: 1.1 } : { scale: 1 }}
-          transition={{ duration: 0.2 }}
-          className="flex flex-col items-center justify-center space-y-4"
+          animate={isDragging ? { scale: 1.03, y: -4 } : { scale: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          className="flex flex-col items-center gap-6"
         >
+          {/* Icon with glow */}
+          <div className="relative">
+            <div
+              className="absolute inset-0 rounded-2xl transition-all duration-500"
+              style={{
+                background: isDragging ? 'var(--accent-1)' : 'transparent',
+                opacity: isDragging ? 0.2 : 0,
+                filter: 'blur(16px)',
+                transform: 'scale(1.5)',
+              }}
+            />
+            <div
+              className="relative w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300"
+              style={{
+                background: isDragging ? 'rgba(124, 92, 252, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                border: `1px solid ${isDragging ? 'rgba(124, 92, 252, 0.3)' : 'var(--border)'}`,
+                boxShadow: isDragging ? '0 0 30px -5px rgba(124, 92, 252, 0.3)' : 'none',
+              }}
+            >
+              {isDragging ? (
+                <Sparkles className="w-7 h-7" style={{ color: 'var(--accent-1)' }} />
+              ) : (
+                <Upload className="w-7 h-7" style={{ color: 'var(--text-tertiary)' }} />
+              )}
+            </div>
+          </div>
+
           <div>
-            {isDragging ? (
-              <FileText className="w-16 h-16 mb-4" style={{ color: '#FFAE35' }} />
-            ) : (
-              <Upload className="w-16 h-16 text-gray-600 mb-4" />
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-xl font-semibold text-white">
-              {isDragging ? 'Solte os arquivos aqui' : 'Arraste PDFs ou clique para selecionar'}
+            <p className="text-base font-medium text-white mb-1.5">
+              {isDragging ? 'Drop your files here' : 'Drag PDFs or click to select'}
             </p>
-            <p className="text-sm text-gray-400">
-              Suporta múltiplos arquivos PDF
+            <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+              Supports multiple PDF files simultaneously
             </p>
           </div>
 
-          <div className="flex items-center gap-2 px-8 py-3 border-2 border-white text-white rounded-full font-medium hover:bg-white hover:text-black transition-all uppercase text-sm tracking-wide">
-            <Upload className="w-4 h-4" />
-            <span>Selecionar Arquivos</span>
-          </div>
+          <span className="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm">
+            <FileText className="w-3.5 h-3.5" />
+            Select Files
+          </span>
         </motion.div>
       </div>
-    </motion.div>
+    </div>
   );
 }
-

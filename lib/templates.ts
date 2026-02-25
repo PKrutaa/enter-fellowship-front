@@ -1,5 +1,5 @@
 /**
- * Templates pré-definidos para tipos de documentos comuns
+ * Pre-defined templates for common document types
  */
 
 import { Template } from '@/types';
@@ -8,26 +8,26 @@ export const DEFAULT_TEMPLATES: Template[] = [
   {
     label: 'carteira_oab',
     schema: {
-      nome: 'Nome do profissional, normalmente no canto superior esquerdo da imagem',
-      inscricao: 'Número de inscrição do profissional',
-      seccional: 'Seccional do profissional',
-      subsecao: 'Subseção à qual o profissional faz parte',
-      categoria: 'Categoria, pode ser ADVOGADO, ADVOGADA, SUPLEMENTAR, ESTAGIARIO, ESTAGIARIA',
-      endereco_profissional: 'Endereço do profissional',
-      telefone_profissional: 'Telefone do profissional',
-      situacao: 'Situação do profissional, normalmente no canto inferior direito',
+      nome: 'Professional name, usually in the top-left corner of the image',
+      inscricao: 'Professional registration number',
+      seccional: 'Professional section',
+      subsecao: 'Sub-section the professional belongs to',
+      categoria: 'Category, can be ADVOGADO, ADVOGADA, SUPLEMENTAR, ESTAGIARIO, ESTAGIARIA',
+      endereco_profissional: 'Professional address',
+      telefone_profissional: 'Professional phone number',
+      situacao: 'Professional status, usually in the bottom-right corner',
     },
   },
   {
     label: 'tela_sistema',
     schema: {
-      data_base: 'Data base da operação selecionada',
-      data_vencimento: 'Data de vencimento da operação selecionada',
-      quantidade_parcelas: 'Quantidade de parcelas da operação selecionada',
-      produto: 'Produto da operação selecionada',
-      sistema: 'Sistema da operação selecionada',
-      tipo_de_operacao: 'Tipo de operação',
-      tipo_de_sistema: 'Tipo de sistema',
+      data_base: 'Base date of the selected operation',
+      data_vencimento: 'Due date of the selected operation',
+      quantidade_parcelas: 'Number of installments of the selected operation',
+      produto: 'Product of the selected operation',
+      sistema: 'System of the selected operation',
+      tipo_de_operacao: 'Operation type',
+      tipo_de_sistema: 'System type',
     },
   },
 ];
@@ -35,5 +35,3 @@ export const DEFAULT_TEMPLATES: Template[] = [
 export function getTemplateByLabel(label: string): Template | undefined {
   return DEFAULT_TEMPLATES.find(t => t.label === label);
 }
-
-

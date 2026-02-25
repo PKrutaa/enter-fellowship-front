@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { FileText, Trash2, CheckCircle, Loader2, AlertCircle, Settings, Sparkles } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { PDFDocument } from '@/types';
 import { formatBytes } from '@/lib/utils';
 
@@ -14,173 +13,143 @@ interface PDFCardProps {
 }
 
 export default function PDFCard({ document, onRemove, onConfigure, isAutoConfigured }: PDFCardProps) {
-  const getStatusIcon = () => {
-    switch (document.status) {
-      case 'completed':
-        return <CheckCircle className="w-5 h-5" style={{ color: '#86efac' }} />;
-      case 'processing':
-        return <Loader2 className="w-5 h-5 animate-spin" style={{ color: '#FFAE35' }} />;
-      case 'error':
-        return <AlertCircle className="w-5 h-5 text-red-500" />;
-      default:
-        return <FileText className="w-5 h-5 text-gray-400" />;
-    }
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    cardRef.current.style.setProperty('--spot-x', `${e.clientX - rect.left}px`);
+    cardRef.current.style.setProperty('--spot-y', `${e.clientY - rect.top}px`);
   };
 
-  const getStatusColor = () => {
-    switch (document.status) {
-      case 'completed':
-        return '';
-      case 'processing':
-        return 'bg-black/20';
-      case 'error':
-        return 'border-red-500/30 bg-red-500/10';
-      default:
-        return 'bg-black/20';
-    }
+  const statusMap = {
+    completed: {
+      icon: <CheckCircle className="w-3.5 h-3.5" style={{ color: 'var(--success)' }} />,
+      label: 'Completed',
+      glow: '0 0 12px -2px rgba(16, 185, 129, 0.2)',
+      borderColor: 'rgba(16, 185, 129, 0.12)',
+      barColor: 'var(--success)',
+    },
+    processing: {
+      icon: <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: 'var(--warning)' }} />,
+      label: 'Processing',
+      glow: '0 0 12px -2px rgba(245, 158, 11, 0.2)',
+      borderColor: 'rgba(245, 158, 11, 0.12)',
+      barColor: 'var(--warning)',
+    },
+    error: {
+      icon: <AlertCircle className="w-3.5 h-3.5" style={{ color: 'var(--error)' }} />,
+      label: 'Error',
+      glow: '0 0 12px -2px rgba(239, 68, 68, 0.15)',
+      borderColor: 'rgba(239, 68, 68, 0.15)',
+      barColor: 'var(--error)',
+    },
+    pending: {
+      icon: null,
+      label: 'Pending',
+      glow: 'none',
+      borderColor: 'var(--border)',
+      barColor: 'transparent',
+    },
   };
 
-  const getBorderStyle = () => {
-    switch (document.status) {
-      case 'processing':
-        return { borderColor: 'rgba(255, 174, 53, 0.3)', borderWidth: '1px' };
-      case 'completed':
-        return { borderColor: 'rgba(134, 239, 172, 0.2)', borderWidth: '1px' };
-      case 'error':
-        return {};
-      default:
-        return { borderColor: 'rgba(255, 174, 53, 0.1)', borderWidth: '1px' };
-    }
-  };
-
-  const getStatusText = () => {
-    switch (document.status) {
-      case 'completed':
-        return 'Concluído';
-      case 'processing':
-        return 'Processando...';
-      case 'error':
-        return 'Erro';
-      default:
-        return 'Aguardando';
-    }
-  };
+  const status = statusMap[document.status];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.3 }}
-      className={`
-        relative border rounded-lg p-5 backdrop-blur-sm
-        transition-all duration-300
-        ${getStatusColor()}
-      `}
-      style={getBorderStyle()}
-      onMouseEnter={(e) => {
-        if (document.status === 'pending') {
-          e.currentTarget.style.borderColor = 'rgba(255, 174, 53, 0.3)';
-        } else if (document.status === 'completed') {
-          e.currentTarget.style.borderColor = 'rgba(134, 239, 172, 0.3)';
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (document.status === 'pending') {
-          e.currentTarget.style.borderColor = 'rgba(255, 174, 53, 0.1)';
-        } else if (document.status === 'completed') {
-          e.currentTarget.style.borderColor = 'rgba(134, 239, 172, 0.2)';
-        }
-      }}
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      className="glass rounded-xl p-4 transition-all duration-300 gradient-border card-spotlight group hover:glow-sm relative overflow-hidden"
+      style={{ borderColor: status.borderColor }}
     >
-      <div className="flex items-start gap-4">
-        {/* Icon */}
-        <div className="flex-shrink-0">
-          <FileText className="w-6 h-6" style={{ color: '#FFAE35' }} />
+      {/* Top accent bar for non-pending status */}
+      {document.status !== 'pending' && (
+        <div
+          className="absolute top-0 left-0 right-0 h-[2px]"
+          style={{
+            background: document.status === 'processing'
+              ? `linear-gradient(90deg, transparent, ${status.barColor}, transparent)`
+              : status.barColor,
+            boxShadow: `0 0 10px 1px ${status.barColor}`,
+            opacity: 0.6,
+            animation: document.status === 'processing' ? 'holographic-shimmer 2s linear infinite' : undefined,
+          }}
+        />
+      )}
+
+      <div className="flex items-start gap-3">
+        <div className="relative flex-shrink-0 mt-0.5">
+          <div className="absolute inset-0 rounded-lg" style={{ background: 'var(--accent-1)', opacity: 0.15, filter: 'blur(8px)' }} />
+          <div className="relative w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(124, 92, 252, 0.1)', border: '1px solid rgba(124, 92, 252, 0.15)' }}>
+            <FileText className="w-4 h-4" style={{ color: 'var(--accent-1)' }} />
+          </div>
         </div>
 
-        {/* Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-semibold text-white truncate">
-                  {document.file.name}
-                </h3>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {formatBytes(document.file.size)}
-                </p>
-              </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <h3 className="text-sm font-medium text-white truncate">{document.file.name}</h3>
+              <p className="text-[11px] font-mono mt-0.5" style={{ color: 'var(--text-tertiary)' }}>{formatBytes(document.file.size)}</p>
+            </div>
+            <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200">
               {document.status === 'pending' && (
                 <button
                   onClick={() => onConfigure(document.id)}
-                  className="p-2 text-gray-400 rounded-lg transition-colors"
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = '#FFAE35';
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 174, 53, 0.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = '';
-                    e.currentTarget.style.backgroundColor = '';
-                  }}
-                  title="Configurar"
+                  className="p-1.5 rounded-lg transition-all"
+                  style={{ color: 'var(--text-tertiary)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--accent-1)'; e.currentTarget.style.background = 'rgba(124,92,252,0.12)'; e.currentTarget.style.boxShadow = '0 0 12px -2px rgba(124,92,252,0.2)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-tertiary)'; e.currentTarget.style.background = ''; e.currentTarget.style.boxShadow = ''; }}
+                  title="Configure"
                 >
                   <Settings className="w-4 h-4" />
                 </button>
               )}
               <button
                 onClick={() => onRemove(document.id)}
-                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                title="Remover"
+                className="p-1.5 rounded-lg transition-all"
+                style={{ color: 'var(--text-tertiary)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--error)'; e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.boxShadow = '0 0 12px -2px rgba(239,68,68,0.15)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-tertiary)'; e.currentTarget.style.background = ''; e.currentTarget.style.boxShadow = ''; }}
+                title="Remove"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* Label & Status */}
-          <div className="flex items-center gap-2 mt-3 flex-wrap">
+          <div className="flex items-center gap-2 mt-2.5 flex-wrap">
             {document.label && (
-              <span className="px-2 py-1 text-xs font-medium rounded-md" style={{ color: '#FFAE35', backgroundColor: 'rgba(255, 174, 53, 0.1)', border: '1px solid rgba(255, 174, 53, 0.2)' }}>
+              <span className="px-2 py-0.5 text-[10px] font-mono font-medium rounded-md badge-glow" style={{ color: 'var(--accent-1)', background: 'rgba(124, 92, 252, 0.1)', border: '1px solid rgba(124, 92, 252, 0.15)' }}>
                 {document.label}
               </span>
             )}
             {isAutoConfigured && document.label && (
-              <span className="px-2 py-1 text-xs font-medium rounded-md flex items-center gap-1" style={{ color: '#86efac', backgroundColor: 'rgba(134, 239, 172, 0.1)', border: '1px solid rgba(134, 239, 172, 0.2)' }}>
-                <Sparkles className="w-3 h-3" />
-                Auto-configurado
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-md badge-glow" style={{ color: 'var(--success)', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.12)' }}>
+                <Sparkles className="w-2.5 h-2.5" />
+                auto
               </span>
             )}
-            <div className="flex items-center gap-1.5 text-xs text-gray-400">
-              {getStatusIcon()}
-              <span>{getStatusText()}</span>
-            </div>
+            <span className="inline-flex items-center gap-1.5 text-[10px]" style={{ color: 'var(--text-tertiary)' }}>
+              {status.icon || <span className="w-1.5 h-1.5 rounded-full bg-white/20" />}
+              {status.label}
+            </span>
           </div>
 
-          {/* Error message */}
           {document.error && (
-            <div className="mt-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-              <p className="text-xs font-medium text-red-400 mb-1">Erro:</p>
-              <p className="text-xs text-red-300 break-words">{document.error}</p>
+            <div className="mt-2.5 p-2.5 rounded-lg text-xs" style={{ background: 'rgba(239, 68, 68, 0.06)', border: '1px solid rgba(239, 68, 68, 0.1)', color: 'var(--error)' }}>
+              {document.error}
             </div>
           )}
 
-          {/* Extraction time */}
           {document.result?.metadata && (
-            <div className="mt-2 flex items-center gap-3 text-xs text-gray-400">
-              <span>
-                Método: <span className="font-medium" style={{ color: '#FFAE35' }}>{document.result.metadata.method}</span>
-              </span>
-              <span>
-                Tempo: <span className="font-medium" style={{ color: '#FFAE35' }}>{document.result.metadata.time_seconds}s</span>
-              </span>
+            <div className="mt-2 flex items-center gap-3 text-[10px] font-mono" style={{ color: 'var(--text-tertiary)' }}>
+              <span style={{ color: 'var(--accent-3)' }}>{document.result.metadata.method}</span>
+              <span style={{ color: 'var(--border-hover)' }}>|</span>
+              <span>{document.result.metadata.time_seconds}s</span>
             </div>
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
-

@@ -1,20 +1,18 @@
 /**
- * Utilitários para fazer match entre PDFs e dataset
+ * Utilities for matching PDFs with dataset entries
  */
 
 import { Dataset, DatasetItem, PDFDocument } from '@/types';
 
 /**
- * Faz match de um PDF com um item do dataset baseado no nome do arquivo
+ * Match a PDF with a dataset item based on file name
  */
 export function matchPDFWithDataset(
   pdfFileName: string,
   dataset: Dataset
 ): DatasetItem | null {
-  // Normaliza o nome do arquivo (remove path, lowercase)
   const normalizedFileName = pdfFileName.toLowerCase();
   
-  // Tenta match direto
   let match = dataset.find(item => {
     const datasetPath = item.pdf_path.toLowerCase();
     return datasetPath === normalizedFileName || 
@@ -24,7 +22,6 @@ export function matchPDFWithDataset(
 
   if (match) return match;
 
-  // Tenta match pelo nome base (sem extensão)
   const baseFileName = normalizedFileName.replace(/\.pdf$/, '');
   match = dataset.find(item => {
     const datasetPath = item.pdf_path.toLowerCase().replace(/\.pdf$/, '');
@@ -36,7 +33,7 @@ export function matchPDFWithDataset(
 }
 
 /**
- * Auto-configura PDFs baseado no dataset
+ * Auto-configure PDFs based on dataset
  */
 export function autoConfigurePDFs(
   documents: PDFDocument[],
@@ -58,7 +55,7 @@ export function autoConfigurePDFs(
 }
 
 /**
- * Verifica quantos PDFs foram auto-configurados
+ * Count how many PDFs were auto-configured
  */
 export function getAutoConfiguredCount(
   documents: PDFDocument[],
@@ -71,7 +68,7 @@ export function getAutoConfiguredCount(
 }
 
 /**
- * Retorna lista de PDFs que não foram encontrados no dataset
+ * Return list of PDFs not found in dataset
  */
 export function getUnmatchedPDFs(
   documents: PDFDocument[],
@@ -82,5 +79,3 @@ export function getUnmatchedPDFs(
     return match === null;
   });
 }
-
-

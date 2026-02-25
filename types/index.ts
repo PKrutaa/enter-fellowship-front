@@ -1,5 +1,5 @@
 /**
- * Tipos da aplicação de extração de PDFs
+ * Application types for PDF extraction
  */
 
 export interface ExtractionSchema {
@@ -59,4 +59,3 @@ export interface Template {
   label: string;
   schema: ExtractionSchema;
 }
-
