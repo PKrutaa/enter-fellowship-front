@@ -1,100 +1,100 @@
 # PDF Extraction System - Frontend
 
-Sistema moderno e minimalista para extração estruturada de dados de PDFs utilizando IA.
+Modern and minimalist system for structured data extraction from PDFs using AI.
 
-## 🚀 Tecnologias
+## 🚀 Technologies
 
-- **Next.js 14** - Framework React com App Router
-- **TypeScript** - Tipagem estática
-- **Tailwind CSS** - Estilização moderna
-- **Framer Motion** - Animações fluidas
-- **Lucide React** - Ícones modernos
+- **Next.js 14** - React Framework with App Router
+- **TypeScript** - Static typing
+- **Tailwind CSS** - Modern styling
+- **Framer Motion** - Fluid animations
+- **Lucide React** - Modern icons
 
-## 🎨 Características
+## 🎨 Features
 
-- ✨ Design minimalista e futurista
-- 🎭 Tema claro com gradientes suaves
-- 📱 Totalmente responsivo
-- 🚀 Performance otimizada
-- 🔄 Upload múltiplo de PDFs
-- ⚙️ Configuração de schemas personalizados
-- 📊 Visualização de resultados em tempo real
-- 💾 Download de resultados em JSON
+- ✨ Minimalist and futuristic design
+- 🎭 Light theme with smooth gradients
+- 📱 Fully responsive
+- 🚀 Optimized performance
+- 🔄 Multiple PDF upload
+- ⚙️ Custom schema configuration
+- 📊 Real-time results visualization
+- 💾 Download results in JSON
 
-## 📦 Instalação
+## 📦 Installation
 
 ```bash
-# Instalar dependências
+# Install dependencies
 npm install
 
-# Copiar arquivo de ambiente
+# Copy environment file
 cp .env.local.example .env.local
 
-# Editar .env.local com a URL da API
+# Edit .env.local with the API URL
 # NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-## 🏃 Executar
+## 🏃 Run
 
 ```bash
-# Modo desenvolvimento
+# Development mode
 npm run dev
 
-# Build para produção
+# Production build
 npm run build
 
-# Executar produção
+# Run production
 npm start
 ```
 
-A aplicação estará disponível em `http://localhost:3000`
+The application will be available at `http://localhost:3000`
 
-## 🔧 Configuração da API
+## 🔧 API Configuration
 
-Por padrão, a aplicação espera que o backend esteja rodando em `http://localhost:8000`.
+By default, the application expects the backend to be running at `http://localhost:8000`.
 
-Para alterar, edite o arquivo `.env.local`:
+To change it, edit the `.env.local` file:
 
 ```env
-NEXT_PUBLIC_API_URL=http://seu-backend:porta
+NEXT_PUBLIC_API_URL=http://your-backend:port
 ```
 
-## 📖 Como Usar
+## 📖 How to Use
 
-### Opção 1: Com Dataset (Automático) ⚡
+### Option 1: With Dataset (Automatic) ⚡
 
-1. **Carregar Dataset**: Faça upload de um arquivo JSON com as configurações
-2. **Upload de PDFs**: Arraste ou selecione arquivos PDF
-3. **Auto-configuração**: Os PDFs são configurados automaticamente baseado no dataset
-4. **Processar**: Clique em "Processar Todos"
-5. **Resultados**: Visualize e baixe os dados extraídos
+1. **Load Dataset**: Upload a JSON file with the configurations
+2. **Upload PDFs**: Drag or select PDF files
+3. **Auto-configuration**: PDFs are automatically configured based on the dataset
+4. **Process**: Click "Process All"
+5. **Results**: View and download the extracted data
 
-### Opção 2: Manual 🔧
+### Option 2: Manual 🔧
 
-1. **Upload de PDFs**: Arraste ou selecione arquivos PDF
-2. **Configurar**: Clique em configurar para cada PDF e defina:
-   - Label do documento (ex: `carteira_oab`, `tela_sistema`)
-   - Schema de extração (campos e descrições)
-3. **Processar**: Clique em "Processar Todos" para enviar para a API
-4. **Resultados**: Visualize os dados extraídos em tempo real
-5. **Download**: Baixe todos os resultados em formato JSON
+1. **Upload PDFs**: Drag or select PDF files
+2. **Configure**: Click configure for each PDF and define:
+   - Document label (e.g., `carteira_oab`, `tela_sistema`)
+   - Extraction schema (fields and descriptions)
+3. **Process**: Click "Process All" to send to the API
+4. **Results**: View extracted data in real-time
+5. **Download**: Download all results in JSON format
 
-> 💡 **Dica**: Use datasets para processar múltiplos PDFs de forma automática! Veja `DATASET_GUIDE.md` para detalhes.
+> 💡 **Tip**: Use datasets to process multiple PDFs automatically! See `DATASET_GUIDE.md` for details.
 
-## 🎯 Templates e Dataset
+## 🎯 Templates and Dataset
 
-### Templates Pré-definidos
+### Pre-defined Templates
 
-A aplicação inclui templates para:
+The application includes templates for:
 
-- **carteira_oab**: Carteiras da OAB
-- **tela_sistema**: Telas de sistemas diversos
+- **carteira_oab**: OAB identity cards
+- **tela_sistema**: Various system screens
 
-Você pode usar esses templates ou criar schemas personalizados.
+You can use these templates or create custom schemas.
 
-### Dataset de Configuração
+### Configuration Dataset
 
-O dataset permite configurar automaticamente múltiplos PDFs de uma vez:
+The dataset allows you to automatically configure multiple PDFs at once:
 
 ```json
 [
@@ -106,36 +106,36 @@ O dataset permite configurar automaticamente múltiplos PDFs de uma vez:
 ]
 ```
 
-- Veja o exemplo em: `public/example-dataset.json`
-- Documentação completa: `DATASET_GUIDE.md`
+- See the example at: `public/example-dataset.json`
+- Full documentation: `DATASET_GUIDE.md`
 
-## 🏗️ Estrutura do Projeto
+## 🏗️ Project Structure
 
 ```
 /
 ├── app/                    # Next.js App Router
-│   ├── layout.tsx         # Layout principal
-│   ├── page.tsx           # Página inicial
-│   └── globals.css        # Estilos globais
-├── components/            # Componentes React
-│   ├── FileUpload.tsx     # Upload de arquivos
-│   ├── PDFCard.tsx        # Card de PDF
-│   ├── SchemaEditor.tsx   # Editor de schemas
-│   └── ResultsDisplay.tsx # Exibição de resultados
-├── lib/                   # Utilitários
-│   ├── api.ts            # Cliente API
-│   ├── utils.ts          # Funções auxiliares
-│   └── templates.ts      # Templates pré-definidos
+│   ├── layout.tsx         # Main layout
+│   ├── page.tsx           # Initial page
+│   └── globals.css        # Global styles
+├── components/            # React components
+│   ├── FileUpload.tsx     # File upload
+│   ├── PDFCard.tsx        # PDF card
+│   ├── SchemaEditor.tsx   # Schema editor
+│   └── ResultsDisplay.tsx # Results display
+├── lib/                   # Utilities
+│   ├── api.ts            # API client
+│   ├── utils.ts          # Auxiliary functions
+│   └── templates.ts      # Pre-defined templates
 ├── types/                # TypeScript types
-│   └── index.ts          # Tipos da aplicação
-└── public/               # Arquivos estáticos
+│   └── index.ts          # Application types
+└── public/               # Static files
 ```
 
-## 🎨 Customização
+## 🎨 Customization
 
-### Cores
+### Colors
 
-Edite `tailwind.config.ts` para personalizar as cores:
+Edit `tailwind.config.ts` to customize the colors:
 
 ```ts
 colors: {
@@ -144,27 +144,27 @@ colors: {
 }
 ```
 
-### Animações
+### Animations
 
-As animações são configuradas em `app/globals.css` e utilizam Framer Motion nos componentes.
+Animations are configured in `app/globals.css` and use Framer Motion in the components.
 
 ## 📝 API
 
-A aplicação consome os seguintes endpoints:
+The application consumes the following endpoints:
 
-- `POST /extract` - Extrai dados de um PDF
+- `POST /extract` - Extracts data from a PDF
   - `file`: PDF (multipart/form-data)
   - `label`: String
   - `extraction_schema`: JSON string
 
-- `GET /health` - Status da API
+- `GET /health` - API status
 
-- `GET /stats` - Estatísticas
+- `GET /stats` - Statistics
 
-## 🤝 Contribuindo
+## 🤝 Contributing
 
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou pull requests.
+Contributions are welcome! Feel free to open issues or pull requests.
 
-## 📄 Licença
+## 📄 License
 
-Este projeto está sob a licença MIT.
+This project is under the MIT license.
